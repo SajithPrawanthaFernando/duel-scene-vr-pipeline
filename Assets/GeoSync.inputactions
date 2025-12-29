@@ -1,0 +1,66 @@
+{
+    "version": 1,
+    "name": "GeoSync",
+    "maps": [
+        {
+            "name": "System",
+            "id": "a0fad056-3585-4924-a376-978f79e36261",
+            "actions": [
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "be67b250-9871-48fe-94fd-bbd79e3edff4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleGeoSync",
+                    "type": "Button",
+                    "id": "29c9ae39-3e4f-4e18-9f9c-9462e5fb542a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "dcf6147c-7f9c-47d5-a043-2bf3ecb6cf6f",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7f9b1f14-5914-44ff-bf59-2a4f4a219535",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleGeoSync",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ca566226-7568-4735-af3e-065c0c6d5ba3",
+                    "path": "<Dpad>{LeftHand}/{Menu}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleGeoSync",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

@@ -1,0 +1,29 @@
+# Unity auto-generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Heavy asset folders
+Assets/Megascans/
+Assets/Quixel/
+Assets/Textures/
+Assets/Models/
+Assets/RawAssets/
+Assets/Audio/
+Assets/HDRI/
+Assets/Video/
+Assets/ADG_Textures/
+Assets/Forst/
+Assets/GrassFlowers/
