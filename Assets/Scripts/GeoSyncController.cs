@@ -16,22 +16,21 @@ public class GeoSyncController : MonoBehaviour
     [Tooltip("If true, GeoSync only applies when the user is inside the polygon fence OR demoMode is enabled.")]
     public bool requireInsideFence = true;
 
-    [Tooltip("Polygon points in (lat, lon). 3+ points required.")]
+    [Tooltip("Polygon points in (lat, lon).")]
     public List<Vector2> fenceLatLon = new List<Vector2>()
     {
         new Vector2(7.293030f, 80.641597f),
         new Vector2(7.294403f, 80.641435f),
         new Vector2(7.294393f, 80.639677f),
         new Vector2(7.293240f, 80.639792f),
-
     };
 
-    [Header("UI (Hook these in Inspector)")]
-    public GameObject awayPanel;   
-    public GameObject insidePanel;  
+    [Header("UI Panels")]
+    public GameObject awayPanel;    
+    public GameObject insidePanel;   
 
     [Header("Scale")]
-    [Tooltip("Unity units per real-world meter. Usually 1 = 1 meter.")]
+    [Tooltip("Unity units per real-world meter. 1 unit = 1 meter.")]
     public float unityUnitsPerMeter = 1f;
 
     [Header("Yaw / Compass")]
@@ -42,7 +41,7 @@ public class GeoSyncController : MonoBehaviour
     public float positionLerp = 5f;
     public float rotationLerp = 5f;
 
-    [Header("Demo Mode (University bypass)")]
+    [Header("Demo Mode")]
     [Tooltip("If true, bypass GPS + fence and use simulated offsets + heading.")]
     public bool demoMode = true;
 
@@ -76,7 +75,7 @@ public class GeoSyncController : MonoBehaviour
         ApplyEnabledState(geoSyncEnabled, instant: true);
     }
 
-    // -------- Public toggles  --------
+    // Public toggles
 
     public void ToggleGeoSync()
     {
@@ -127,7 +126,7 @@ public class GeoSyncController : MonoBehaviour
 
         // Enabled
         if (demoMode)
-            StopGeoServices();  
+            StopGeoServices();  // demo doesn't need GPS
         else
             StartGeoServices();
 
@@ -140,21 +139,20 @@ public class GeoSyncController : MonoBehaviour
         RefreshUI();
     }
 
-    // -------- Main loop --------
+    // Main loop 
 
     void Update()
     {
         if (!geoSyncEnabled)
             return;
 
-        // 1) Acquire lat/lon + heading
+        // Acquire lat/lon + heading
         if (!TryGetLatLonHeading(out double lat, out double lon, out float heading))
         {
-            // GPS not ready (only possible when demoMode is OFF)
+            // GPS not ready => show neutral, don't move GeoAnchor
             IsGeoApplying = false;
 
-            // hide away while GPS initializes
-         
+            // Show neutral: hide away while GPS initializes
             SetUIPanels(inside: false, away: false);
             return;
         }
@@ -163,29 +161,29 @@ public class GeoSyncController : MonoBehaviour
         CurrentLongitude = lon;
         CurrentHeading = heading;
 
-        // 2) Fence check 
+        // Fence check (only if required and not demo)
         IsInsideFence = true;
         if (!demoMode && requireInsideFence && fenceLatLon != null && fenceLatLon.Count >= 3)
         {
             IsInsideFence = PointInPolygonLatLon(new Vector2((float)lat, (float)lon), fenceLatLon);
         }
 
-        // 3) Decide UI + whether to apply geosync
+        // Decide UI + whether to apply geosync
         bool canApply = demoMode || !requireInsideFence || IsInsideFence;
 
         if (!canApply)
         {
-            // Outside => show away message
+            // Outside => show away message, don't move GeoAnchor
             IsGeoApplying = false;
             SetUIPanels(inside: false, away: true);
             return;
         }
 
-       
+        // Inside OR demo => apply geosync
         IsGeoApplying = true;
         SetUIPanels(inside: true, away: false);
 
-        // 4) Compute offset in meters from target -> current
+        // Compute offset in meters from target -> current
         Vector2 offsetMeters = LatLonToMetersOffset(lat, lon, targetLatitude, targetLongitude);
 
         // Move GeoAnchor opposite the user offset
@@ -195,12 +193,12 @@ public class GeoSyncController : MonoBehaviour
         float yaw = -heading + yawOffsetDegrees;
         _targetRot = Quaternion.Euler(0f, yaw, 0f);
 
-        // 5) Smooth apply
+        // Smooth apply
         transform.localPosition = Vector3.Lerp(transform.localPosition, _targetPos, Time.deltaTime * positionLerp);
         transform.localRotation = Quaternion.Slerp(transform.localRotation, _targetRot, Time.deltaTime * rotationLerp);
     }
 
-    // -------- Helpers --------
+    // Helpers
 
     bool TryGetLatLonHeading(out double lat, out double lon, out float heading)
     {
@@ -210,7 +208,7 @@ public class GeoSyncController : MonoBehaviour
 
         if (demoMode)
         {
-        
+            // Fake GPS around the target using meter offsets
             double metersNorth = demoLatLonOffsetMeters.y;
             double metersEast = demoLatLonOffsetMeters.x;
 
@@ -223,7 +221,7 @@ public class GeoSyncController : MonoBehaviour
             return true;
         }
 
-       
+        // Real GPS
         if (!IsRunning || Input.location.status != LocationServiceStatus.Running)
             return false;
 
@@ -245,18 +243,20 @@ public class GeoSyncController : MonoBehaviour
             return;
         }
 
+        // Demo mode always shows "inside" state
         if (demoMode)
         {
             SetUIPanels(true, false);
             return;
         }
-      
+
+        // If GPS not running yet, show neutral
         if (!IsRunning)
         {
             SetUIPanels(false, false);
             return;
         }
-    
+      
     }
 
     void SetUIPanels(bool inside, bool away)
@@ -339,6 +339,7 @@ public class GeoSyncController : MonoBehaviour
         return new Vector2((float)eastMeters, (float)northMeters);
     }
 
+    // input points are (lat,lon) but geometry uses x=lon, y=lat.
     static bool PointInPolygonLatLon(Vector2 pointLatLon, List<Vector2> polyLatLon)
     {
         float x = pointLatLon.y; // lon
